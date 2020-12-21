@@ -28,6 +28,7 @@ public class NioNonBlockingSocket {
     public void startRequest(String host,int port) throws IOException {
 
         SocketChannel socketChannel = null;
+
         try {
             socketChannel = SocketChannel.open();
             SocketAddress socketAddress = new InetSocketAddress(host,port);
@@ -85,16 +86,25 @@ public class NioNonBlockingSocket {
     private void read(SelectionKey key) throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
         ByteBuffer byteBuffer = ByteBuffer.allocate(128);
-        socketChannel.read(byteBuffer);
-        byteBuffer.flip();
-        String receivedData = charset.decode(byteBuffer).toString();
-        if("".equals(receivedData)){
-            key.cancel();
-            socketChannel.close();
-            return;
+//        socketChannel.read(byteBuffer);
+//        byteBuffer.flip();
+//        String receivedData = charset.decode(byteBuffer).toString();
+//        if("".equals(receivedData)){
+//            key.cancel();
+//            socketChannel.close();
+//            return;
+//        }
+//        System.out.println(receivedData);
+
+        while(socketChannel.read(byteBuffer)!=-1){
+            byteBuffer.flip();
+            String receivedData = charset.decode(byteBuffer).toString();
+            System.out.println(receivedData);
+            byteBuffer.flip();
         }
-        System.out.println(receivedData);
+
         key.interestOps(SelectionKey.OP_READ);
+        return ;
     }
 
     public static void main(String[] args) throws IOException {
