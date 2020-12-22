@@ -1,6 +1,6 @@
-package cn.haohan.socket;
+package cn.haohan.server.socket;
 
-import cn.haohan.util.HttpUtil;
+import cn.haohan.server.util.HttpUtil;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -46,7 +46,7 @@ public class NioNonBlockingSocket {
                 Iterator<SelectionKey> iterator = selectionKeys.iterator();
                 while(iterator.hasNext()){
                     SelectionKey selectionKey = iterator.next();
-//                    iterator.remove();
+                    iterator.remove();
                     if(selectionKey.isConnectable()){
                         connected(selectionKey);
                     }else if(selectionKey.isWritable()){
@@ -86,25 +86,25 @@ public class NioNonBlockingSocket {
     private void read(SelectionKey key) throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
         ByteBuffer byteBuffer = ByteBuffer.allocate(128);
-//        socketChannel.read(byteBuffer);
-//        byteBuffer.flip();
-//        String receivedData = charset.decode(byteBuffer).toString();
-//        if("".equals(receivedData)){
-//            key.cancel();
-//            socketChannel.close();
-//            return;
-//        }
-//        System.out.println(receivedData);
-
-        while(socketChannel.read(byteBuffer)!=-1){
-            byteBuffer.flip();
-            String receivedData = charset.decode(byteBuffer).toString();
-            System.out.println(receivedData);
-            byteBuffer.flip();
+        socketChannel.read(byteBuffer);
+        byteBuffer.flip();
+        String receivedData = charset.decode(byteBuffer).toString();
+        if("".equals(receivedData)){
+            key.cancel();
+            socketChannel.close();
+            return;
         }
+        System.out.println(receivedData);
+
+//        while(socketChannel.read(byteBuffer)!=-1){
+//            byteBuffer.flip();
+//            String receivedData = charset.decode(byteBuffer).toString();
+//            System.out.println(receivedData);
+//            byteBuffer.flip();
+//            System.out.println("1");
+//        }
 
         key.interestOps(SelectionKey.OP_READ);
-        return ;
     }
 
     public static void main(String[] args) throws IOException {

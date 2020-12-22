@@ -1,6 +1,6 @@
-package cn.haohan.socket;
+package cn.haohan.server.socket;
 
-import cn.haohan.util.HttpUtil;
+import cn.haohan.server.util.HttpUtil;
 
 import java.io.*;
 import java.net.InetSocketAddress;

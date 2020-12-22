@@ -1,4 +1,4 @@
-package cn.haohan.util;
+package cn.haohan.server.util;
 
 public class HttpUtil {
 
