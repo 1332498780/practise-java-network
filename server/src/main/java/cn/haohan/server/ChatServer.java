@@ -1,6 +1,7 @@
 package cn.haohan.server;
 
 import cn.com.haohan.common.Message;
+import cn.com.haohan.common.MessageHeader;
 import cn.com.haohan.common.util.ProtoStuffUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +15,9 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 @Slf4j
 public class ChatServer implements Runnable{
@@ -22,6 +25,7 @@ public class ChatServer implements Runnable{
     private static Selector selector;
     private int port = 9999;
     private ServerSocketChannel serverSocketChannel;
+    private Map<String,SocketChannel> socketChannelMap = new HashMap<>();
 
     static {
         try {
@@ -78,30 +82,41 @@ public class ChatServer implements Runnable{
 
     private void handleRead(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel) key.channel();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(256);
         final int readCount = channel.read(byteBuffer);
         if(readCount > 0){
             byteBuffer.flip();
             byte[] array = new byte[readCount];
             byteBuffer.get(array,0,readCount);
-            log.info("{}",array);
+//            log.info("{}",array);
             Message message = ProtoStuffUtil.deserialize(array, Message.class);
-            switch (message.getHeader().getType()){
+            MessageHeader header = message.getHeader();
+            switch (header.getType()){
                 case LOGIN:
-                    log.info("user [{}] login success!",message.getHeader().getSender());
+                    log.info("user [{}] login success!",header.getSender());
+                    socketChannelMap.put(header.getSender(),channel);
                     break;
                 case NORMAL:
+                    log.info("user [{}] send a message:[{}] to [{}]",header.getSender(),new String(message.getBody(),"UTF-8"),header.getReceiver());
+                    SocketChannel receiverChannel = socketChannelMap.get(header.getReceiver());
+                    if(receiverChannel == null){
+                        log.warn("[{}]'s socketchannel not exists");
+                        return;
+                    }
+                    receiverChannel.write(ByteBuffer.wrap(array));
                     break;
                 default:
-                    log.error("no appropriate type");
+                    log.warn("no appropriate type");
             }
         }
+//        channel.register(selector,SelectionKey.OP_READ);
     }
 
     public static void main(String[] args){
         ChatServer server = new ChatServer();
         new Thread(server).start();
     }
+
 
     @Override
     public void run() {
