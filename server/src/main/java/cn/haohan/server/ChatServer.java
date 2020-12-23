@@ -96,14 +96,25 @@ public class ChatServer implements Runnable{
                     log.info("user [{}] login success!",header.getSender());
                     socketChannelMap.put(header.getSender(),channel);
                     break;
+                case LOGOUT:
+                    log.info("user [{}] logout",header.getSender());
+                    //广播
+
+                    //登出处理
+                    SocketChannel logoutSocketChannel = socketChannelMap.remove(header.getSender());
+                    logoutSocketChannel.close();
+                    break;
                 case NORMAL:
                     log.info("user [{}] send a message:[{}] to [{}]",header.getSender(),new String(message.getBody(),"UTF-8"),header.getReceiver());
                     SocketChannel receiverChannel = socketChannelMap.get(header.getReceiver());
                     if(receiverChannel == null){
-                        log.warn("[{}]'s socketchannel not exists");
+                        log.warn("[{}]'s socketchannel not exists",header.getReceiver());
                         return;
                     }
-                    receiverChannel.write(ByteBuffer.wrap(array));
+                    if(receiverChannel != channel){
+                        log.warn("receiverChannel != channel");
+                    }
+                    channel.write(ByteBuffer.wrap(array));
                     break;
                 default:
                     log.warn("no appropriate type");
