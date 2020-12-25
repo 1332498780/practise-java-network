@@ -10,6 +10,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.junit.Test;
 
 import java.io.*;
@@ -19,9 +20,8 @@ public class HttpClientTest {
 
     @Test
     public void testHttpGet(){
-//        HttpGet get = new HttpGet("http://www.baidu.com");
 
-        HttpUriRequest request = new HttpGet("http://10.10.12.12/");
+        HttpUriRequest request = new HttpGet("http://www.baidu.com/");
         try(CloseableHttpClient client = HttpClientBuilder.create().build();
             CloseableHttpResponse response = client.execute(request)){
             log.info("status-line:{}",response.getStatusLine().toString());
@@ -34,6 +34,7 @@ public class HttpClientTest {
             while((readCount = reader.read(chars))!=-1){
                 log.info("read:{}",new String(chars,0,readCount));
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
